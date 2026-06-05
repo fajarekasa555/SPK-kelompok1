@@ -104,6 +104,7 @@ body {
 .logo-sub { font-size: 10px; color: var(--text3); letter-spacing: .5px; text-transform: uppercase; }
 
 .nav { padding: 12px 8px; flex: 1; }
+.sidebar { overflow-y: auto; }
 .nav-group { margin-bottom: 20px; }
 .nav-group-label {
   font-size: 10px; color: var(--text3); font-weight: 600;
@@ -156,14 +157,14 @@ body {
 .topbar {
   position: sticky; top: 0;
   background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 28px; height: 54px;
-  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 28px; min-height: 54px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
   z-index: 50;
 }
-.topbar-left { display: flex; align-items: center; gap: 12px; }
-.topbar-title { font-weight: 600; font-size: 15px; }
-.topbar-actions { display: flex; gap: 8px; }
-.content { padding: 28px; max-width: auto; }
+.topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.topbar-title { font-weight: 600; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.content { width: min(100%, 1180px); padding: 28px; margin: 0 auto; }
 
 .page { display: none; animation: pageIn .25s ease; }
 .page.active { display: block; }
@@ -221,7 +222,7 @@ body {
 .form-select option { background: var(--surface2); }
 
 .table-wrap { overflow-x: auto; border-radius: var(--rs); border: 1px solid var(--border); }
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 13px; }
 thead tr { background: var(--surface2); }
 th {
   padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 600;
@@ -235,7 +236,7 @@ tr:hover td { background: var(--surface2); }
   background: transparent; border: 1px solid var(--border);
   border-radius: 5px; padding: 5px 8px; color: var(--text);
   font-family: var(--mono); font-size: 12px; outline: none;
-  width: 80px; text-align: center; transition: border-color var(--transition);
+  width: 96px; max-width: 100%; text-align: center; transition: border-color var(--transition);
 }
 .td-input:focus { border-color: var(--accent); }
 
@@ -277,15 +278,15 @@ tr:hover td { background: var(--surface2); }
 .modal-body ul { padding-left: 18px; }
 .modal-footer { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
 
-.stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 24px; }
+.stats { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; margin-bottom: 24px; }
 .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 16px; transition: border-color var(--transition); }
 .stat:hover { border-color: var(--accent); }
-.stat-val { font-size: 26px; font-weight: 700; letter-spacing: -.5px; line-height: 1; margin-bottom: 4px; }
+.stat-val { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stat-lbl { font-size: 11.5px; color: var(--text2); }
 
-.steps { display: flex; gap: 0; margin-bottom: 20px; }
+.steps { display: flex; gap: 0; margin-bottom: 20px; overflow-x: auto; padding-bottom: 2px; }
 .step {
-  flex: 1; padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 600;
+  flex: 1 0 84px; padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 600;
   color: var(--text3); position: relative; transition: color var(--transition);
 }
 .step + .step::before {
@@ -295,10 +296,9 @@ tr:hover td { background: var(--surface2); }
 .step-n {
   width: 20px; height: 20px; border-radius: 50%;
   background: var(--surface2); border: 1px solid var(--border);
-  display: block; margin: 0 auto 5px;
   display: flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: 700;
-  display: block; margin: 0 auto 5px;
+  margin: 0 auto 5px;
 }
 .step.done { color: var(--green); }
 .step.done .step-n { background: var(--green-s); border-color: var(--green); color: var(--green); }
@@ -312,6 +312,7 @@ tr:hover td { background: var(--surface2); }
   border-radius: var(--rs); padding: 12px 16px;
   transition: all .2s; position: relative; overflow: hidden;
 }
+.rank-item > * { position: relative; z-index: 1; }
 .rank-item:hover { border-color: var(--accent); }
 .rank-item.r1 { border-color: rgba(245,158,11,.35); }
 .rank-num {
@@ -340,6 +341,7 @@ tr:hover td { background: var(--surface2); }
   font-family: var(--mono); font-size: 12.5px; color: var(--accent);
   background: var(--accent-s); border: 1px solid var(--accent-h);
   border-radius: var(--rs); padding: 14px 16px; line-height: 2; margin-bottom: 16px;
+  overflow-x: auto;
 }
 
 /* ── FIXED: Import zone — no onclick on div, only on button ── */
@@ -368,6 +370,9 @@ tr:hover td { background: var(--surface2); }
 .or-divider { display: flex; align-items: center; gap: 12px; color: var(--text3); font-size: 12px; margin: 14px 0; }
 .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 .ar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+.method-card-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; font-size:13px; color:var(--text2); line-height:1.6; }
+.method-card { padding:12px; background:var(--surface2); border-radius:var(--rs); border:1px solid var(--border); }
+.method-card-title { font-weight:600; color:var(--text); margin-bottom:4px; }
 
 .toast {
   position: fixed; bottom: 20px; right: 20px;
@@ -386,11 +391,11 @@ tr:hover td { background: var(--surface2); }
 .empty svg { width: 40px; height: 40px; margin-bottom: 10px; opacity: .4; }
 .empty p { font-size: 13px; }
 
-.learn-tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+.learn-tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); overflow-x: auto; }
 .learn-tab-btn {
   padding: 12px 18px; background: transparent; border: none;
   color: var(--text2); font-weight: 600; font-size: 13px; cursor: pointer;
-  border-bottom: 3px solid transparent; transition: all var(--transition);
+  border-bottom: 3px solid transparent; transition: all var(--transition); white-space: nowrap;
 }
 .learn-tab-btn:hover { color: var(--text); }
 .learn-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
@@ -444,11 +449,36 @@ tr:hover td { background: var(--surface2); }
   body.sidebar-open .sidebar { transform: translateX(0); }
   body.sidebar-open .sidebar-backdrop { opacity: 1; visibility: visible; }
   .main { margin-left: 0; }
+  .topbar { padding: 8px 16px; align-items: flex-start; flex-wrap: wrap; }
+  .topbar-left { width: 100%; }
+  .topbar-actions { width: 100%; justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
   .stats { grid-template-columns: 1fr 1fr; }
-  .form-row { grid-template-columns: 1fr; }
+  .form-row, .form-row-3, .compare-grid, .method-card-grid { grid-template-columns: 1fr; }
   .content { padding: 16px; }
+  .card { padding: 16px; }
+  .modal-overlay { align-items: flex-start; overflow-y: auto; }
+  .modal-window { margin-top: 16px; }
+  .import-zone { padding: 24px 16px; }
+  .ar .btn, .import-btn { width: 100%; justify-content: center; }
   .sh-row { flex-direction: column; align-items: stretch; }
   .sh-actions .btn { width: 100%; justify-content: center; }
+  .rank-item { align-items: flex-start; gap: 10px; padding: 12px; }
+  .rank-q { font-size: 14px; }
+  .bar-row { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; }
+  .bar-lbl { width: auto; text-align: left; grid-column: 1 / -1; }
+  .bar-bg { grid-column: 1; }
+  .bar-val { width: auto; grid-column: 2; }
+  .example-table { min-width: 520px; }
+  .example-box { overflow-x: auto; }
+}
+
+@media (max-width: 480px) {
+  body { font-size: 13px; }
+  .stats { grid-template-columns: 1fr; }
+  .sh h2 { font-size: 20px; }
+  .topbar-actions .btn { flex: 1 0 auto; justify-content: center; }
+  .modal-footer { flex-direction: column-reverse; }
+  .modal-footer .btn { width: 100%; justify-content: center; }
 }
 </style>
 </head>
@@ -539,14 +569,14 @@ tr:hover td { background: var(--surface2); }
       <div class="topbar-title" id="topbar-title">Dashboard</div>
     </div>
     <div class="topbar-actions">
-      <button class="btn btn-success btn-sm" onclick="runAll()">
+      <!-- <button class="btn btn-success btn-sm" onclick="runAll()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         Hitung Semua
       </button>
       <button class="btn btn-ghost btn-sm" onclick="exportHasilExcel()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export Excel
-      </button>
+      </button> -->
       <button class="btn btn-ghost btn-sm" onclick="resetAll()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
         Reset
@@ -580,13 +610,13 @@ tr:hover td { background: var(--surface2); }
           <div class="step"><div class="step-n">5</div>MAIRCA</div>
           <div class="step"><div class="step-n">6</div>Ranking</div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;color:var(--text2);line-height:1.6">
-          <div style="padding:12px;background:var(--surface2);border-radius:var(--rs);border:1px solid var(--border)">
-            <div style="font-weight:600;color:var(--text);margin-bottom:4px">Metode SMART</div>
+        <div class="method-card-grid">
+          <div class="method-card">
+            <div class="method-card-title">Metode SMART</div>
             Menormalisasi bobot kriteria → menghasilkan wⱼ yang dipakai sebagai input MAIRCA.
           </div>
-          <div style="padding:12px;background:var(--surface2);border-radius:var(--rs);border:1px solid var(--border)">
-            <div style="font-weight:600;color:var(--text);margin-bottom:4px">Metode MAIRCA</div>
+          <div class="method-card">
+            <div class="method-card-title">Metode MAIRCA</div>
             Menghitung gap teoritis vs realistis per alternatif → nilai Q terkecil = alternatif terbaik.
           </div>
         </div>
