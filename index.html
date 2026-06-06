@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SPK SMART–MAIRCA</title>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
 /* ══════════════════════════════════════
    TOKENS
@@ -550,12 +550,12 @@ tr:hover td { background: var(--surface2); }
   </nav>
 
   <div class="sidebar-foot">
-    <div class="theme-toggle" onclick="toggleTheme()" title="Toggle tema">
+    <!-- <div class="theme-toggle" onclick="toggleTheme()" title="Toggle tema">
       <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
       </svg>
       <span id="theme-label">Light</span>
-    </div>
+    </div> -->
   </div>
 </aside>
 <div class="sidebar-backdrop" onclick="closeSidebar()"></div>
@@ -581,6 +581,12 @@ tr:hover td { background: var(--surface2); }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
         Reset
       </button>
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle tema">
+        <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <span id="theme-label">Light</span>
+      </div>
     </div>
   </div>
 
@@ -1527,9 +1533,98 @@ function setSheetCols(ws, widths) {
   return ws;
 }
 
-function appendAoASheet(wb, data, name, widths) {
+const xlStyles = {
+  border: {
+    top: { style:'thin', color:{ rgb:'D9E2F3' } },
+    bottom: { style:'thin', color:{ rgb:'D9E2F3' } },
+    left: { style:'thin', color:{ rgb:'D9E2F3' } },
+    right: { style:'thin', color:{ rgb:'D9E2F3' } },
+  },
+  headerFill: { fgColor:{ rgb:'1F4E78' } },
+  titleFill: { fgColor:{ rgb:'17365D' } },
+  sectionFill: { fgColor:{ rgb:'EAF2F8' } },
+  bestFill: { fgColor:{ rgb:'E2F0D9' } },
+};
+
+function mergeStyle(base, extra) {
+  return {
+    ...base,
+    ...extra,
+    font: { ...(base.font||{}), ...(extra.font||{}) },
+    fill: extra.fill || base.fill,
+    alignment: { ...(base.alignment||{}), ...(extra.alignment||{}) },
+    border: extra.border || base.border,
+  };
+}
+
+function styleWorksheet(ws, opts={}) {
+  if (!ws['!ref']) return ws;
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  const headerRows = opts.headerRows || [opts.headerRow || 1];
+  const titleRows = opts.titleRows || [];
+  const sectionRows = opts.sectionRows || [];
+  const highlightRows = opts.highlightRows || [];
+  const baseStyle = {
+    border: xlStyles.border,
+    alignment: { vertical:'center', wrapText:true },
+    font: { name:'Calibri', sz:11, color:{ rgb:'1F2937' } },
+  };
+
+  for (let r=range.s.r; r<=range.e.r; r++) {
+    for (let c=range.s.c; c<=range.e.c; c++) {
+      const addr = XLSX.utils.encode_cell({ r, c });
+      const cell = ws[addr];
+      if (!cell) continue;
+      const row = r + 1;
+      const isHeader = headerRows.includes(row);
+      const isTitle = titleRows.includes(row);
+      const isSection = sectionRows.includes(row);
+      const isHighlight = highlightRows.includes(row);
+      let style = baseStyle;
+      if (isTitle) {
+        style = mergeStyle(style, {
+          fill: xlStyles.titleFill,
+          font: { bold:true, sz:14, color:{ rgb:'FFFFFF' } },
+          alignment: { horizontal:'center', vertical:'center' },
+        });
+      } else if (isHeader) {
+        style = mergeStyle(style, {
+          fill: xlStyles.headerFill,
+          font: { bold:true, color:{ rgb:'FFFFFF' } },
+          alignment: { horizontal:'center', vertical:'center' },
+        });
+      } else if (isSection) {
+        style = mergeStyle(style, {
+          fill: xlStyles.sectionFill,
+          font: { bold:true, color:{ rgb:'1F4E78' } },
+        });
+      } else if (isHighlight) {
+        style = mergeStyle(style, {
+          fill: xlStyles.bestFill,
+          font: { bold:true, color:{ rgb:'22543D' } },
+        });
+      }
+      if (c === 0 && !isTitle) style = mergeStyle(style, { alignment:{ horizontal:'center' } });
+      if (cell.t === 'n') style = mergeStyle(style, { numFmt: Number.isInteger(cell.v) ? '0' : '0.00000' });
+      cell.s = style;
+    }
+  }
+
+  const firstHeader = headerRows[0];
+  if (firstHeader && opts.autoFilter !== false) {
+    ws['!autofilter'] = { ref: XLSX.utils.encode_range({
+      s: { r:firstHeader - 1, c:range.s.c },
+      e: { r:range.e.r, c:range.e.c },
+    }) };
+  }
+  ws['!freeze'] = { xSplit:0, ySplit:firstHeader || 1 };
+  return ws;
+}
+
+function appendAoASheet(wb, data, name, widths, opts={}) {
   const ws = XLSX.utils.aoa_to_sheet(data.map(row => row || []));
   if (widths) setSheetCols(ws, widths);
+  styleWorksheet(ws, opts);
   XLSX.utils.book_append_sheet(wb, ws, name);
   return ws;
 }
@@ -1643,21 +1738,43 @@ function exportHasilExcel() {
     row.push(xlFormula(`SUM(B${r}:${xlCol(1+nK)}${r})`, S.mr.Q[a.id]));
     maircaRows[r - 1] = row;
   });
-  appendAoASheet(wb, maircaRows, maircaSheet, [24, ...S.kriteria.map(()=>14), 14]);
+  appendAoASheet(wb, maircaRows, maircaSheet, [24, ...S.kriteria.map(()=>14), 14], {
+    headerRows: [1, tpHeaderRow, trHeaderRow, gapHeaderRow],
+    sectionRows: [4, trHeaderRow - 1, gapHeaderRow - 1],
+  });
 
-  const rankingRows = [['Peringkat','Alternatif','Q','Keterangan']];
-  S.alternatif.forEach((a,i) => {
-    const r = i + 2;
-    const qCell = xlRef(maircaSheet, `${xlCol(2 + nK)}${gapStart + i}`);
+  const sortedRanking = [...S.alternatif].sort((a,b)=>S.mr.Q[a.id]-S.mr.Q[b.id]);
+  const rankingStart = 4;
+  const rankingEnd = rankingStart + nA - 1;
+  const rankingRows = [
+    ['HASIL PERANGKINGAN SMART-MAIRCA','','',''],
+    ['Nilai Q terkecil adalah alternatif terbaik','','',''],
+    ['Peringkat','Alternatif','Q','Keterangan'],
+  ];
+  sortedRanking.forEach((a,i) => {
+    const r = rankingStart + i;
+    const maircaIdx = S.alternatif.findIndex(x => x.id === a.id);
+    const qCell = xlRef(maircaSheet, `${xlCol(2 + nK)}${gapStart + maircaIdx}`);
     const rankValue = S.alternatif.filter(x => S.mr.Q[x.id] < S.mr.Q[a.id]).length + 1;
     rankingRows.push([
-      xlFormula(`RANK.EQ(C${r},$C$2:$C$${altEnd},1)`, rankValue),
+      xlFormula(`RANK.EQ(C${r},$C$${rankingStart}:$C$${rankingEnd},1)`, rankValue),
       a.nama,
       xlFormula(qCell, S.mr.Q[a.id]),
       xlFormula(`IF(A${r}=1,"Terbaik","Peringkat "&A${r})`, rankValue === 1 ? 'Terbaik' : `Peringkat ${rankValue}`),
     ]);
   });
-  appendAoASheet(wb, rankingRows, 'Ranking Akhir', [12,24,14,18]);
+  const rankingWs = appendAoASheet(wb, rankingRows, 'Ranking Akhir', [12,28,16,20], {
+    headerRows: [3],
+    titleRows: [1],
+    sectionRows: [2],
+    highlightRows: [4],
+    autoFilter: true,
+  });
+  rankingWs['!merges'] = [
+    { s:{ r:0, c:0 }, e:{ r:0, c:3 } },
+    { s:{ r:1, c:0 }, e:{ r:1, c:3 } },
+  ];
+  rankingWs['!rows'] = [{ hpt:24 }, { hpt:20 }, { hpt:22 }];
 
   appendAoASheet(wb, [
     ['Tahap','Rumus'],
