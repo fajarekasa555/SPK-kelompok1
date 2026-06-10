@@ -6,6 +6,13 @@
 <title>SPK SMART–MAIRCA</title>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)'], ['$', '$']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 <style>
 /* ══════════════════════════════════════
    TOKENS
@@ -343,6 +350,8 @@ tr:hover td { background: var(--surface2); }
   border-radius: var(--rs); padding: 14px 16px; line-height: 2; margin-bottom: 16px;
   overflow-x: auto;
 }
+.formula mjx-container, .formula-box mjx-container { color: var(--accent); }
+.formula-box + .table-wrap { margin-top: 12px; }
 
 /* ── FIXED: Import zone — no onclick on div, only on button ── */
 .import-zone {
@@ -782,9 +791,9 @@ tr:hover td { background: var(--surface2); }
           Formula SMART
         </div>
         <div class="formula">
-          Normalisasi Bobot : wⱼ = Bobot_j / Σ Bobot_j<br>
-          Nilai Utility &nbsp;&nbsp;&nbsp;&nbsp;: ui(ai) = (Cout − Cmin) / (Cmax − Cmin)<br>
-          Total Nilai &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: u(ai) = Σ wⱼ × ui(ai)
+          Normalisasi Bobot : \(w_j=\dfrac{\text{Bobot}_j}{\sum_{j=1}^{n}\text{Bobot}_j}\)<br>
+          Nilai Utility : \(u_j(a_i)=\dfrac{C_{out}-C_{min}}{C_{max}-C_{min}}\)<br>
+          Total Nilai : \(U(a_i)=\sum_{j=1}^{n} w_j \times u_j(a_i)\)
         </div>
         <p style="margin:0.75rem 0 0; font-size:0.92rem; color: var(--text2);">Referensi: <a href="https://journal.literasisains.id/index.php/mamen/article/view/903" target="_blank" rel="noopener noreferrer">journal.literasisains.id/index.php/mamen/article/view/903</a></p>
         <button class="btn btn-primary" style="margin-top:14px" onclick="hitungSMART()">
@@ -804,12 +813,12 @@ tr:hover td { background: var(--surface2); }
           Formula MAIRCA
         </div>
         <div class="formula">
-          Preferensi &nbsp;: PAᵢ = 1 / m<br>
-          Matriks Tₚ &nbsp;: tpᵢⱼ = PAᵢ × wⱼ<br>
-          Matriks Tᵣ &nbsp;: Benefit: trᵢⱼ = tpᵢⱼ × (xᵢⱼ − xⱼ⁻) / (xⱼ⁺ − xⱼ⁻)<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cost: &nbsp;&nbsp;&nbsp;trᵢⱼ = tpᵢⱼ × (xᵢⱼ − xⱼ⁺) / (xⱼ⁻ − xⱼ⁺)<br>
-          Gap &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: gᵢⱼ = tpᵢⱼ − trᵢⱼ<br>
-          Nilai Q &nbsp;&nbsp;&nbsp;&nbsp;: Qᵢ = Σ gᵢⱼ &nbsp;(Q terkecil = terbaik)
+          Preferensi : \(PA_i=\dfrac{1}{m}\)<br>
+          Matriks Teoritis : \(t_{pij}=PA_i \times w_j\)<br>
+          Matriks Realistis Benefit : \(t_{rij}=t_{pij}\times\dfrac{x_{ij}-x_j^-}{x_j^+-x_j^-}\)<br>
+          Matriks Realistis Cost : \(t_{rij}=t_{pij}\times\dfrac{x_{ij}-x_j^+}{x_j^- - x_j^+}\)<br>
+          Gap : \(g_{ij}=t_{pij}-t_{rij}\)<br>
+          Nilai Q : \(Q_i=\sum_{j=1}^{n}g_{ij}\) &nbsp;(Q terkecil = terbaik)
         </div>
         <p style="margin:0.75rem 0 0; font-size:0.92rem; color: var(--text2);">Referensi: <a href="https://naratif.utb-univ.ac.id/index.php/naratif/article/view/290" target="_blank" rel="noopener noreferrer">naratif.utb-univ.ac.id/index.php/naratif/article/view/290</a></p>
         <button class="btn btn-success" style="margin-top:14px" onclick="hitungMAIRCA()">
@@ -873,9 +882,9 @@ tr:hover td { background: var(--surface2); }
       </div>
       <div id="smart-langkah" class="learn-tab-content">
         <div class="step-card" data-step="1"><div class="step-card-title">Siapkan Data</div><div class="step-card-desc">Kumpulkan semua kriteria dengan bobot dan nilai untuk setiap alternatif.</div></div>
-        <div class="step-card" data-step="2"><div class="step-card-title">Normalisasi Bobot Kriteria</div><div class="step-card-desc">Hitung bobot ternormalisasi agar total = 1</div><div class="formula-box">wⱼ = Bobot_j / Σ Bobot_j</div></div>
-        <div class="step-card" data-step="3"><div class="step-card-title">Hitung Nilai Utilitas</div><div class="step-card-desc">Normalisasi nilai alternatif ke skala 0-1.</div><div class="formula-box">ui(ai) = (Cout − Cmin) / (Cmax − Cmin)</div></div>
-        <div class="step-card" data-step="4"><div class="step-card-title">Hitung Total Skor</div><div class="step-card-desc">Kalikan bobot dengan utilitas, lalu jumlahkan</div><div class="formula-box">u(ai) = Σ wⱼ × ui(ai)</div><p style="margin-top: 10px; font-size: 12px; color: var(--accent);">Alternatif dengan skor tertinggi adalah yang terbaik</p></div>
+        <div class="step-card" data-step="2"><div class="step-card-title">Normalisasi Bobot Kriteria</div><div class="step-card-desc">Hitung bobot ternormalisasi agar total = 1</div><div class="formula-box">\(w_j=\dfrac{\text{Bobot}_j}{\sum_{j=1}^{n}\text{Bobot}_j}\)</div></div>
+        <div class="step-card" data-step="3"><div class="step-card-title">Hitung Nilai Utilitas</div><div class="step-card-desc">Normalisasi nilai alternatif ke skala 0-1.</div><div class="formula-box">\(u_j(a_i)=\dfrac{C_{out}-C_{min}}{C_{max}-C_{min}}\)</div></div>
+        <div class="step-card" data-step="4"><div class="step-card-title">Hitung Total Skor</div><div class="step-card-desc">Kalikan bobot dengan utilitas, lalu jumlahkan</div><div class="formula-box">\(U(a_i)=\sum_{j=1}^{n} w_j \times u_j(a_i)\)</div><p style="margin-top: 10px; font-size: 12px; color: var(--accent);">Alternatif dengan skor tertinggi adalah yang terbaik</p></div>
       </div>
       <div id="smart-contoh" class="learn-tab-content">
         <div class="example-box">
@@ -924,11 +933,11 @@ tr:hover td { background: var(--surface2); }
         </div>
       </div>
       <div id="mairca-langkah" class="learn-tab-content">
-        <div class="step-card" data-step="1"><div class="step-card-title">Hitung Preferensi Alternatif</div><div class="step-card-desc">Setiap alternatif diberi bobot yang sama</div><div class="formula-box">PAᵢ = 1 / m</div></div>
-        <div class="step-card" data-step="2"><div class="step-card-title">Bangun Matriks Teoritis (Tₚ)</div><div class="step-card-desc">Nilai ideal = preferensi × bobot kriteria</div><div class="formula-box">tpᵢⱼ = PAᵢ × wⱼ</div></div>
-        <div class="step-card" data-step="3"><div class="step-card-title">Bangun Matriks Realistis (Tᵣ)</div><div class="step-card-desc">Nilai nyata berdasarkan posisi alternatif</div><div class="formula-box" style="line-height: 2.2;">Benefit: trᵢⱼ = tpᵢⱼ × (xᵢⱼ − xⱼ⁻) / (xⱼ⁺ − xⱼ⁻)<br>Cost: trᵢⱼ = tpᵢⱼ × (xᵢⱼ − xⱼ⁺) / (xⱼ⁻ − xⱼ⁺)</div></div>
-        <div class="step-card" data-step="4"><div class="step-card-title">Hitung Gap</div><div class="step-card-desc">Selisih antara teoritis dan realistis</div><div class="formula-box">gᵢⱼ = tpᵢⱼ − trᵢⱼ</div></div>
-        <div class="step-card" data-step="5"><div class="step-card-title">Hitung Nilai Q</div><div class="step-card-desc">Jumlahkan semua gap per alternatif</div><div class="formula-box">Qᵢ = Σ gᵢⱼ</div><p style="margin-top: 10px; font-size: 12px; color: var(--accent);">Q terkecil = alternatif terbaik</p></div>
+        <div class="step-card" data-step="1"><div class="step-card-title">Hitung Preferensi Alternatif</div><div class="step-card-desc">Setiap alternatif diberi bobot yang sama</div><div class="formula-box">\(PA_i=\dfrac{1}{m}\)</div></div>
+        <div class="step-card" data-step="2"><div class="step-card-title">Bangun Matriks Teoritis (Tₚ)</div><div class="step-card-desc">Nilai ideal = preferensi × bobot kriteria</div><div class="formula-box">\(t_{pij}=PA_i \times w_j\)</div></div>
+        <div class="step-card" data-step="3"><div class="step-card-title">Bangun Matriks Realistis (Tᵣ)</div><div class="step-card-desc">Nilai nyata berdasarkan posisi alternatif</div><div class="formula-box" style="line-height: 2.2;">\[\text{Benefit: }t_{rij}=t_{pij}\times\dfrac{x_{ij}-x_j^-}{x_j^+-x_j^-}\]\[\text{Cost: }t_{rij}=t_{pij}\times\dfrac{x_{ij}-x_j^+}{x_j^- - x_j^+}\]</div></div>
+        <div class="step-card" data-step="4"><div class="step-card-title">Hitung Gap</div><div class="step-card-desc">Selisih antara teoritis dan realistis</div><div class="formula-box">\(g_{ij}=t_{pij}-t_{rij}\)</div></div>
+        <div class="step-card" data-step="5"><div class="step-card-title">Hitung Nilai Q</div><div class="step-card-desc">Jumlahkan semua gap per alternatif</div><div class="formula-box">\(Q_i=\sum_{j=1}^{n}g_{ij}\)</div><p style="margin-top: 10px; font-size: 12px; color: var(--accent);">Q terkecil = alternatif terbaik</p></div>
       </div>
       <div id="mairca-contoh" class="learn-tab-content">
         <div class="example-box">
@@ -973,6 +982,10 @@ let _uid = 1;
 const uid = () => 'u' + (_uid++);
 let _confirmCallback = null;
 let _isConfirm = false;
+
+function renderLatex(scope = document) {
+  if (window.MathJax?.typesetPromise) window.MathJax.typesetPromise([scope]);
+}
 
 // ═══════════════════════════════════
 // NAVIGATION
@@ -1191,6 +1204,7 @@ function renderSmartOut() {
   const { wj, utility, totalNilai } = S.sr;
   let h = '';
   h += `<div class="card"><div class="card-title">Step 1 — Normalisasi Bobot (wⱼ)</div>
+    <div class="formula-box">\\[w_j=\\frac{\\text{Bobot}_j}{\\sum_{j=1}^{n}\\text{Bobot}_j}\\]</div>
     <div class="table-wrap"><table>
     <thead><tr><th>#</th><th>Kriteria</th><th>Bobot</th><th>Tipe</th><th>wⱼ</th></tr></thead><tbody>`;
   S.kriteria.forEach((k,j) => {
@@ -1200,6 +1214,7 @@ function renderSmartOut() {
   });
   h += `</tbody></table></div></div>`;
   h += `<div class="card"><div class="card-title">Step 2 — Matriks Utility</div>
+    <div class="formula-box">\\[u_j(a_i)=\\frac{C_{out}-C_{min}}{C_{max}-C_{min}}\\]</div>
     <div class="table-wrap"><table><thead><tr><th>Alternatif</th>`;
   S.kriteria.forEach(k=>h+=`<th>${k.nama}</th>`);
   h+=`</tr></thead><tbody>`;
@@ -1211,7 +1226,8 @@ function renderSmartOut() {
   h+=`</tbody></table></div></div>`;
   const sorted=[...S.alternatif].sort((a,b)=>totalNilai[b.id]-totalNilai[a.id]);
   const maxV = Math.max(...sorted.map(a=>totalNilai[a.id]));
-  h += `<div class="card"><div class="card-title">Step 3 — Total Nilai u(ai)</div>`;
+  h += `<div class="card"><div class="card-title">Step 3 — Total Nilai u(ai)</div>
+    <div class="formula-box">\\[U(a_i)=\\sum_{j=1}^{n} w_j \\times u_j(a_i)\\]</div>`;
   sorted.forEach(a=>{
     const v=totalNilai[a.id], pct=maxV>0?(v/maxV*100):0;
     h+=`<div class="bar-row"><div class="bar-lbl">${a.nama}</div>
@@ -1219,7 +1235,9 @@ function renderSmartOut() {
       <div class="bar-val">${v.toFixed(4)}</div></div>`;
   });
   h+=`</div>`;
-  document.getElementById('out-smart').innerHTML = h;
+  const wrap = document.getElementById('out-smart');
+  wrap.innerHTML = h;
+  renderLatex(wrap);
 }
 
 // ═══════════════════════════════════
@@ -1266,10 +1284,10 @@ function renderMaircaOut() {
   const { PAi, Tp, Tr, G, Q } = S.mr;
   let h = '';
   h += `<div class="card"><div class="card-title">Step 1 — Preferensi Alternatif (PAᵢ)</div>
-    <div style="font-family:var(--mono);font-size:13px;color:var(--text2)">
-      PAᵢ = 1/m = 1/${S.alternatif.length} = <span style="color:var(--accent);font-weight:700">${PAi.toFixed(4)}</span>
-    </div></div>`;
+    <div class="formula-box">\\[PA_i=\\frac{1}{m}=\\frac{1}{${S.alternatif.length}}=${PAi.toFixed(4)}\\]</div>
+    </div>`;
   h += `<div class="card"><div class="card-title">Step 2 — Matriks Tₚ</div>
+    <div class="formula-box">\\[t_{pij}=PA_i \\times w_j\\]</div>
     <div class="table-wrap"><table><thead><tr><th>Alternatif</th>`;
   S.kriteria.forEach(k=>h+=`<th>${k.nama}</th>`);
   h+=`</tr></thead><tbody>`;
@@ -1280,6 +1298,7 @@ function renderMaircaOut() {
   });
   h+=`</tbody></table></div></div>`;
   h += `<div class="card"><div class="card-title">Step 3 — Matriks Tᵣ</div>
+    <div class="formula-box">\\[\\text{Benefit: }t_{rij}=t_{pij}\\times\\frac{x_{ij}-x_j^-}{x_j^+-x_j^-}\\]\\[\\text{Cost: }t_{rij}=t_{pij}\\times\\frac{x_{ij}-x_j^+}{x_j^- - x_j^+}\\]</div>
     <div class="table-wrap"><table><thead><tr><th>Alternatif</th>`;
   S.kriteria.forEach(k=>h+=`<th>${k.nama}</th>`);
   h+=`</tr></thead><tbody>`;
@@ -1290,6 +1309,7 @@ function renderMaircaOut() {
   });
   h+=`</tbody></table></div></div>`;
   h += `<div class="card"><div class="card-title">Step 4 — Matriks Gap (G) & Nilai Q</div>
+    <div class="formula-box">\\[g_{ij}=t_{pij}-t_{rij}\\]\\[Q_i=\\sum_{j=1}^{n}g_{ij}\\]</div>
     <div class="table-wrap"><table><thead><tr><th>Alternatif</th>`;
   S.kriteria.forEach(k=>h+=`<th>${k.nama}</th>`);
   h+=`<th>Q</th></tr></thead><tbody>`;
@@ -1299,7 +1319,9 @@ function renderMaircaOut() {
     h+=`<td class="td-num" style="color:var(--accent);font-weight:700">${Q[a.id].toFixed(5)}</td></tr>`;
   });
   h+=`</tbody></table></div></div>`;
-  document.getElementById('out-mairca').innerHTML = h;
+  const wrap = document.getElementById('out-mairca');
+  wrap.innerHTML = h;
+  renderLatex(wrap);
 }
 
 // ═══════════════════════════════════
